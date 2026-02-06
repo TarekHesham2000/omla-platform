@@ -79,7 +79,7 @@ function render() {
         const meta = currencyData[state.lang][c];
         list.innerHTML += `<div class="flex justify-between items-center p-4 bg-gray-800/20 rounded-2xl border border-gray-800/40">
             <div class="flex items-center gap-3"><span class="text-xl">${meta.flag}</span><span class="text-xs font-bold text-gray-300">${meta.name}</span></div>
-            <span class="font-mono font-bold text-blue-400">${val.toFixed(2)}</span></div>`;
+            <span class="font-mono font-bold text-yellow-500">${val.toFixed(2)}</span></div>`;
         sel.innerHTML += `<option value="${c}">${meta.flag} ${meta.name}</option>`;
     });
 
@@ -191,3 +191,4 @@ function refreshManual() {
 }
 
 init();
+
