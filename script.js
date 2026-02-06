@@ -8,7 +8,6 @@ const currencyData = {
     en: { 'USD': { name: 'US Dollar', flag: '🇺🇸' }, 'EUR': { name: 'Euro', flag: '🇪🇺' }, 'GBP': { name: 'British Pound', flag: '🇬🇧' }, 'SAR': { name: 'Saudi Riyal', flag: '🇸🇦' }, 'AED': { name: 'UAE Dirham', flag: '🇦🇪' }, 'KWD': { name: 'Kuwaiti Dinar', flag: '🇰🇼' } }
 };
 
-// دالة جلب الأيام للرسم البياني
 function getDays() {
     const arDays = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
     const enDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -20,28 +19,18 @@ function getDays() {
     return res;
 }
 
-// دالة البدء مع معالجة أخطاء الحظر (CORS / Tracking Prevention)
 async function init(force = false) {
     const cachedData = localStorage.getItem('omla_data');
-    
     try {
-        // محاولة طلب البيانات من السيرفر
         const res = await fetch(`https://api.metalpriceapi.com/v1/latest?api_key=${API_KEY}`);
-        if (!res.ok) throw new Error("Network response was not ok");
-        
         const data = await res.json();
         if (data && data.success) {
             localStorage.setItem('omla_data', JSON.stringify(data));
             processData(data);
-        } else {
-            throw new Error("API Limit or Key Error");
-        }
+        } else { throw new Error(); }
     } catch (e) {
-        console.warn("API Blocked or Error - Using Cache/Fallback Data");
-        
-        // بيانات احتياطية في حال تعطل الـ API تماماً لتجنب الشاشة البيضاء
         const fallback = cachedData ? JSON.parse(cachedData) : {
-            rates: { EGP: 48.75, XAU: 0.00039, SAR: 12.98, USD: 1, EUR: 0.92, GBP: 0.78, AED: 3.67, KWD: 0.31 }
+            rates: { EGP: 48.75, XAU: 0.00039, SAR: 12.98, USD: 1 }
         };
         processData(fallback);
     }
@@ -50,7 +39,6 @@ async function init(force = false) {
 function processData(data) {
     state.rates = data.rates;
     state.egp = data.rates.EGP;
-    // حساب سعر الذهب محلياً
     state.g24 = ( (1 / data.rates.XAU) / 31.1035 ) * state.egp;
     render();
     renderCharts();
@@ -63,7 +51,6 @@ function render() {
     if (!list || !sel) return;
 
     list.innerHTML = ''; sel.innerHTML = '';
-    
     Object.keys(currencyData[state.lang]).forEach(c => {
         const val = c === 'USD' ? state.egp : (state.egp / state.rates[c]);
         const meta = currencyData[state.lang][c];
@@ -82,7 +69,7 @@ function render() {
     document.getElementById('val-g21').innerText = Math.round(state.g24 * 0.875).toLocaleString() + (isAr ? ' ج.م' : ' EGP');
     document.getElementById('val-g18').innerText = Math.round(state.g24 * 0.75).toLocaleString() + (isAr ? ' ج.م' : ' EGP');
 
-    // حاسبة المصنعية
+    // حاسبات (مصنعية وزكاة)
     const updateG = () => {
         const w = parseFloat(document.getElementById('g-w').value) || 0;
         const m = parseFloat(document.getElementById('g-m').value) || 0;
@@ -92,7 +79,6 @@ function render() {
     };
     document.getElementById('g-w').oninput = updateG; document.getElementById('g-k').onchange = updateG; document.getElementById('g-m').oninput = updateG;
 
-    // حاسبة الزكاة
     const updateZ = () => {
         const w = parseFloat(document.getElementById('z-w').value) || 0;
         const res = document.getElementById('z-res');
@@ -112,43 +98,63 @@ function render() {
 }
 
 function renderCharts() {
-    // محو المخططات القديمة لتجنب تداخل البيانات
     if(goldChart) goldChart.destroy(); if(currChart) currChart.destroy();
     const days = getDays();
+    const isAr = state.lang === 'ar';
 
-    // إعدادات لمنع مشاكل التخزين المحجوب في المتصفح
-    const chartConfig = {
-        chart: { 
-            toolbar: { show: false },
-            animations: { enabled: false }, // تسريع الأداء ومنع حظر الـ Storage
-            background: 'transparent'
-        },
-        theme: { mode: 'dark' }
-    };
-
+    // مخطط العملة
     currChart = new ApexCharts(document.querySelector("#currencyChart"), {
-        ...chartConfig,
-        chart: { ...chartConfig.chart, type: 'area', height: 350 },
+        chart: { type: 'area', height: 350, toolbar: { show: false }, background: 'transparent' },
         series: [{ name: 'USD/EGP', data: [48.1, 48.5, 48.3, 48.8, parseFloat(state.egp.toFixed(2))] }],
         colors: ['#3b82f6'],
+        stroke: { curve: 'smooth', width: 2 },
         xaxis: { categories: days },
-        yaxis: { labels: { formatter: (v) => v.toFixed(2) } }
+        theme: { mode: 'dark' }
     });
     currChart.render();
 
-    const g21 = Math.round(state.g24 * 0.875);
+    // مخطط الذهب المقارن (خطوط منقطة وتفاعلية)
+    const p24 = Math.round(state.g24);
+    const p21 = Math.round(state.g24 * 0.875);
+    const p18 = Math.round(state.g24 * 0.75);
+
     goldChart = new ApexCharts(document.querySelector("#goldMultiChart"), {
-        ...chartConfig,
-        chart: { ...chartConfig.chart, type: 'line', height: 350 },
-        series: [{ name: '21K Gold', data: [g21-15, g21+5, g21-10, g21+10, g21] }],
-        colors: ['#ca8a04'],
+        chart: { 
+            type: 'line', 
+            height: 350, 
+            toolbar: { show: false }, 
+            background: 'transparent',
+            // تفعيل ميزة إخفاء الخطوط عند الضغط على اسم السلسلة في Legend
+            events: { legendClick: function(chartContext, seriesIndex, config) { } }
+        },
+        series: [
+            { name: isAr ? 'عيار 24' : '24K Gold', data: [p24-15, p24+5, p24-10, p24+10, p24] },
+            { name: isAr ? 'عيار 21' : '21K Gold', data: [p21-15, p21+5, p21-10, p21+10, p21] },
+            { name: isAr ? 'عيار 18' : '18K Gold', data: [p18-15, p18+5, p18-10, p18+10, p18] }
+        ],
+        // ألوان الأعيرة: 24 ذهبي ساطع | 21 برتقالي | 18 برونزي/فضي
+        colors: ['#facc15', '#fb923c', '#94a3b8'], 
+        stroke: {
+            width: [3, 3, 3],
+            curve: 'smooth',
+            dashArray: [0, 5, 8] // عيار 24 خط متصل | عيار 21 منقط | عيار 18 منقط جداً
+        },
         xaxis: { categories: days },
-        yaxis: { labels: { formatter: (v) => Math.round(v) } }
+        yaxis: { labels: { formatter: (v) => Math.round(v) } },
+        legend: {
+            show: true,
+            position: 'top',
+            horizontalAlign: 'center',
+            fontSize: '12px',
+            fontFamily: 'Readex Pro',
+            onItemClick: { toggleDataSeries: true } // ميزة الإخفاء والظهار
+        },
+        theme: { mode: 'dark' },
+        markers: { size: 4 }
     });
     goldChart.render();
 }
 
-// وظائف الواجهة
 function toggleLang() {
     state.lang = state.lang === 'ar' ? 'en' : 'ar';
     document.getElementById('app-html').dir = state.lang === 'ar' ? 'rtl' : 'ltr';
@@ -162,7 +168,6 @@ function switchTab(t) {
     document.getElementById('section-gold').classList.toggle('hidden-section', t !== 'gold');
     document.getElementById('btn-currency').classList.toggle('active', t === 'currency');
     document.getElementById('btn-gold').classList.toggle('active', t === 'gold');
-    // حل مشكلة عدم ظهور الرسم البياني عند التبديل
     setTimeout(() => { window.dispatchEvent(new Event('resize')); }, 100);
 }
 
@@ -171,5 +176,4 @@ function refreshManual() {
     init(true).then(() => setTimeout(() => document.getElementById('refresh-icon').classList.remove('spinning'), 1000));
 }
 
-// تشغيل عند التحميل
 init();
