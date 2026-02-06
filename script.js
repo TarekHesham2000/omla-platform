@@ -211,5 +211,4 @@ function refreshManual() {
 }
 
 // تشغيل عند التحميل
-
 init();
