@@ -13,7 +13,18 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
-    
+    <link rel="manifest" href="manifest.json">
+        <meta name="theme-color" content="#3b82f6">
+        
+        <script>
+          if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+              navigator.serviceWorker.register('./sw.js')
+                .then(reg => console.log('تطبيق عُملة جاهز للعمل أوفلاين!'))
+                .catch(err => console.log('فشل تسجيل الـ SW', err));
+            });
+          }
+        </script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="min-h-screen flex flex-col">
@@ -159,4 +170,5 @@
 </body>
 
 </html>
+
 
