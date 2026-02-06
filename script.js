@@ -1,5 +1,5 @@
 // مفتاح API تجريبي - يمكنك استبداله بمفتاحك الخاص لاحقاً
-const API_KEY = '52db0772c5888ee47fb601e12cd58e16';
+const API_KEY = 'cbc92210ee198f35c4f01e7ff1de635c';
 let state = { rates: {}, egp: 0, g24: 0, lang: 'ar' };
 let goldChart, currChart;
 
@@ -211,4 +211,5 @@ function refreshManual() {
 }
 
 // تشغيل عند التحميل
+
 init();
