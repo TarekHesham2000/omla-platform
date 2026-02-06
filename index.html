@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" id="app-html">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>عُملة | أسعار الذهب والعملات</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💰</text></svg>">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="min-h-screen flex flex-col">
+
+<body class="min-h-screen flex flex-col">
+
+    <header class="max-w-7xl mx-auto w-full px-4 py-6 flex flex-col md:flex-row justify-between items-center gap-6">
+        <div class="flex items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="relative w-12 h-12 flex items-center justify-center bg-gradient-to-br from-yellow-400 via-yellow-600 to-yellow-800 rounded-2xl shadow-lg shadow-yellow-900/30 transform -rotate-3">
+                    <span class="text-black text-2xl font-black transform rotate-3">ع</span>
+                    <div class="absolute -bottom-1 -left-1 w-4 h-4 bg-blue-500 rounded-full border-4 border-slate-950"></div>
+                </div>
+                <div class="flex flex-col">
+                    <h1 class="text-3xl font-black leading-none tracking-tighter">عُملة</h1>
+                    <span class="text-[9px] text-gray-500 font-bold tracking-[0.3em] uppercase">OMLA Platform</span>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 bg-gray-900/80 px-3 py-1.5 rounded-full border border-gray-800 ml-2">
+                <div class="status-pulse"></div>
+                <span class="text-[10px] font-bold text-green-500 uppercase tracking-widest" data-ar="مباشر" data-en="Live">مباشر</span>
+            </div>
+        </div>
+        
+        <div class="flex bg-gray-900/50 p-1.5 rounded-2xl border border-gray-800 shadow-inner backdrop-blur-sm">
+            <button onclick="switchTab('currency')" id="btn-currency" class="tab-btn active px-8 py-2.5 rounded-xl transition-all duration-300 text-sm" data-ar="العملات" data-en="Currencies">العملات</button>
+            <button onclick="switchTab('gold')" id="btn-gold" class="tab-btn px-8 py-2.5 rounded-xl transition-all duration-300 text-sm" data-ar="الذهب" data-en="Gold">الذهب</button>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <button onclick="refreshManual()" class="flex items-center gap-2 bg-blue-600/5 hover:bg-blue-600 text-blue-500 hover:text-white px-5 py-2.5 rounded-xl border border-blue-600/20 transition-all group">
+                <span id="refresh-icon">🔄</span>
+                <span class="text-xs font-bold" data-ar="تحديث" data-en="Update">تحديث</span>
+            </button>
+            <button onclick="toggleLang()" class="bg-gray-800/80 hover:bg-gray-700 px-5 py-2.5 rounded-xl border border-gray-700 text-[10px] font-black transition-all" id="lang-toggle-btn">ENGLISH</button>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto w-full px-4 flex-grow">
+        <div id="section-currency" class="space-y-6 text-right">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <div class="lg:col-span-4 space-y-6 text-right">
+                    <div class="glass p-6 rounded-[2rem] shadow-2xl">
+                        <h3 class="font-bold mb-6 text-sm text-gray-500 flex justify-between">
+                            <span data-ar="أسعار الصرف اللحظية" data-en="Exchange Rates">أسعار الصرف اللحظية</span>
+                            <span class="text-blue-500 italic text-[10px]">EGP ~</span>
+                        </h3>
+                        <div id="currency-list" class="space-y-3"></div>
+                    </div>
+                    <div class="glass p-6 rounded-[2rem] border-t-4 border-blue-500/50">
+                        <h4 class="text-xs font-bold text-blue-400 mb-6 uppercase tracking-wider text-center" data-ar="🧮 محول العملات" data-en="🧮 FX Converter">🧮 محول العملات</h4>
+                        <div class="space-y-4">
+                            <input type="number" id="c-input" value="1" class="w-full bg-black/40 p-4 rounded-2xl outline-none border border-gray-800 focus:border-blue-500 text-xl font-bold text-center">
+                            <select id="c-select" class="w-full bg-gray-800 p-4 rounded-2xl outline-none border border-gray-700 text-sm font-semibold"></select>
+                            <div class="p-6 bg-blue-600/5 rounded-2xl border border-blue-600/10 text-center">
+                                <div id="c-output" class="text-3xl font-black text-blue-500">0.00</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="lg:col-span-8 glass rounded-[2rem] p-8">
+                    <h3 class="text-sm font-bold text-gray-400 mb-6 text-right" data-ar="مخطط أداء الدولار" data-en="USD Performance Chart">مخطط أداء الدولار</h3>
+                    <div id="currencyChart"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="section-gold" class="hidden-section space-y-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="glass p-8 rounded-[2rem] border-r-4 border-yellow-600">
+                    <p class="text-gray-500 text-xs font-bold mb-2 uppercase" data-ar="ذهب عيار 24" data-en="24K Gold">ذهب عيار 24</p>
+                    <h2 class="text-3xl font-black gold-grad" id="val-g24">--</h2>
+                </div>
+                <div class="glass p-8 rounded-[2rem] border-r-4 border-gray-400">
+                    <p class="text-gray-500 text-xs font-bold mb-2 uppercase" data-ar="ذهب عيار 21" data-en="21K Gold">ذهب عيار 21</p>
+                    <h2 class="text-3xl font-black text-gray-100" id="val-g21">--</h2>
+                </div>
+                <div class="glass p-8 rounded-[2rem] border-r-4 border-gray-600">
+                    <p class="text-gray-500 text-xs font-bold mb-2 uppercase" data-ar="ذهب عيار 18" data-en="18K Gold">ذهب عيار 18</p>
+                    <h2 class="text-3xl font-black text-gray-400" id="val-g18">--</h2>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <div class="lg:col-span-8 glass rounded-[2rem] p-8">
+                    <h3 class="text-sm font-bold mb-6 text-gray-400" data-ar="تحليل السوق العالمي للذهب" data-en="Global Gold Market Analysis">تحليل السوق العالمي للذهب</h3>
+                    <div id="goldMultiChart"></div>
+                </div>
+                <div class="lg:col-span-4 glass p-8 rounded-[2rem] border-t-4 border-yellow-600/50 text-right">
+                    <h3 class="font-bold mb-8 text-yellow-500 text-center" data-ar="⚖️ حاسبة الصاغة" data-en="⚖️ Gold Calculator">⚖️ حاسبة الصاغة</h3>
+                    <div class="space-y-6">
+                        <div>
+                            <label class="text-[16px] text-gray-400 font-bold mb-2 block uppercase" data-ar="الوزن بالجرام" data-en="Weight (g)">الوزن بالجرام</label>
+                            <input type="number" id="g-w" placeholder="0.00" class="w-full bg-black/40 p-4 rounded-xl outline-none border border-gray-800 focus:border-yellow-600 text-xl font-bold text-center">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-[16px] text-gray-400 font-bold mb-2 block uppercase" data-ar="العيار" data-en="Karat">العيار</label>
+                                <select id="g-k" class="w-full bg-gray-800 p-4 rounded-xl border border-gray-700 text-sm">
+                                    <option value="21">21K</option><option value="18">18K</option><option value="24">24K</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-[16px] text-yellow-500 font-bold mb-2 block uppercase" data-ar="المصنعية/جرام" data-en="Work/g">المصنعية/جرام</label>
+                                <input type="number" id="g-m" value="150" class="w-full bg-gray-800 p-4 rounded-xl border border-gray-700 text-yellow-500 font-bold text-center">
+                            </div>
+                        </div>
+                        <div class="bg-yellow-600/10 p-6 rounded-3xl text-center border border-yellow-600/20 shadow-lg">
+                            <p class="text-[10px] text-gray-400 mb-2 uppercase tracking-widest" data-ar="إجمالي السعر النهائي" data-en="Total Final Price">إجمالي السعر النهائي</p>
+                            <h2 class="text-4xl font-black gold-grad" id="g-res">0.00</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="glass p-8 rounded-[2rem] border-t-4 border-green-600/50 text-right mt-6">
+                <h3 class="font-bold mb-6 text-green-500 text-center" data-ar="🕌 حاسبة زكاة الذهب"
+                    data-en="🕌 Gold Zakat Calculator">🕌 حاسبة زكاة الذهب</h3>
+                <div class="space-y-4">
+                    <p class="text-[11px] text-gray-400 mb-4 leading-relaxed">
+                        * يتم احتساب الزكاة إذا بلغ الذهب النصاب (85 جرام عيار 21 فأكثر) ومر عليه عام هجري.
+                    </p>
+                    <input type="number" id="z-w" placeholder="ادخل وزن الذهب الكلي (جرام)"
+                        class="w-full bg-black/40 p-4 rounded-xl outline-none border border-gray-800 focus:border-green-600 text-lg font-bold text-center">
+            
+                    <div id="z-status" class="hidden p-4 rounded-xl text-center text-sm font-bold"></div>
+            
+                    <div class="bg-green-600/10 p-6 rounded-3xl text-center border border-green-600/20 shadow-lg">
+                        <p class="text-[10px] text-gray-400 mb-2 uppercase tracking-widest">مقدار الزكاة المستحقة</p>
+                        <h2 class="text-3xl font-black text-green-500" id="z-res">0.00</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="max-w-7xl mx-auto w-full px-4 py-10 mt-10 border-t border-gray-900 text-center">
+        <div class="flex flex-col md:flex-row justify-between items-center gap-4 text-gray-500 text-[10px] font-bold uppercase tracking-widest">
+            <p>© 2026 OMLA PLATFORM</p>
+            <p data-ar="الأسعار استرشادية وتخضع لتغيرات السوق" data-en="Prices are indicative">الأسعار استرشادية وتخضع لتغيرات السوق</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
