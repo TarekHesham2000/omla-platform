@@ -1,0 +1,104 @@
+/* الإعدادات العامة */
+body { 
+    font-family: 'Readex Pro', sans-serif; 
+    background: #020617; 
+    color: #f8fafc; 
+    overflow-x: hidden; 
+    line-height: 1.6;
+}
+
+/* تأثير الزجاج (Glassmorphism) */
+.glass { 
+    background: rgba(15, 23, 42, 0.6); 
+    backdrop-filter: blur(12px); 
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.05); 
+    transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+.glass:hover {
+    border-color: rgba(59, 130, 246, 0.2);
+}
+
+/* التبويبات (Tabs) */
+.tab-btn {
+    color: #94a3b8;
+    position: relative;
+    overflow: hidden;
+}
+
+.tab-btn.active { 
+    background: #ca8a04; 
+    color: #000; 
+    font-weight: 700; 
+    box-shadow: 0 4px 20px rgba(202, 138, 4, 0.3); 
+}
+
+/* تدرج اللون الذهبي */
+.gold-grad { 
+    background: linear-gradient(to right, #fde68a, #ca8a04, #b45309); 
+    -webkit-background-clip: text; 
+    -webkit-text-fill-color: transparent; 
+    font-weight: 900;
+}
+
+/* إخفاء الأقسام */
+.hidden-section { 
+    display: none; 
+}
+
+/* أنيميشن التحديث */
+@keyframes spin { 
+    from { transform: rotate(0deg); } 
+    to { transform: rotate(360deg); } 
+}
+.spinning { 
+    display: inline-block;
+    animation: spin 1s linear infinite; 
+}
+
+/* نبض الحالة (Live Status) */
+.status-pulse { 
+    width: 8px; 
+    height: 8px; 
+    background: #22c55e; 
+    border-radius: 50%; 
+    box-shadow: 0 0 8px #22c55e; 
+    animation: pulse 2s infinite; 
+}
+
+@keyframes pulse { 
+    0% { opacity: 1; transform: scale(1); } 
+    50% { opacity: 0.3; transform: scale(1.2); } 
+    100% { opacity: 1; transform: scale(1); } 
+}
+
+/* تحسينات الرسوم البيانية للموبايل */
+#currencyChart, #goldMultiChart {
+    width: 100%;
+    margin: 0 auto;
+    /* يمنع الرسم البياني من اعتراض تمرير الصفحة للأعلى والأسفل */
+    touch-action: pan-y; 
+}
+
+/* تحسين المدخلات (Inputs) */
+input[type="number"] {
+    -moz-appearance: textfield;
+}
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* ألوان مخصصة للحالات */
+.text-green-500 { color: #22c55e; }
+.bg-green-600\/10 { background-color: rgba(22, 163, 74, 0.1); }
+.border-green-600\/20 { border-color: rgba(22, 163, 74, 0.2); }
+
+/* تحسين العرض على الشاشات الصغيرة جداً */
+@media (max-width: 400px) {
+    h1 { font-size: 1.5rem !important; }
+    .tab-btn { padding-left: 1rem !important; padding-right: 1rem !important; font-size: 0.75rem !important; }
+    .glass { padding: 1rem !important; }
+}
